@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INDEXX — The Nostalgia Archive</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chrome-1: #e8e8e8;
+    --chrome-2: #d0d0d4;
+    --chrome-3: #b8b8bf;
+    --silver-shine: #f5f5f7;
+    --white-hot: #ffffff;
+    --steel-dark: #2a2a2f;
+    --steel-mid: #4a4a52;
+    --accent-blue: #7eb8e0;
+    --accent-cyan: #a0e8f0;
+    --accent-pulse: #c0d8ff;
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0e0e12;
+    color: var(--chrome-1);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* === BACKGROUND === */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-layer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(200,210,230,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(126,184,224,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 50% at 80% 60%, rgba(160,232,240,0.04) 0%, transparent 50%);
+  }
+  .bg-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+  }
+
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+  }
+
+  .particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    animation: particleFloat 8s ease-in-out infinite;
+  }
+  .particle:nth-child(1) { left: 15%; top: 30%; animation-delay: 0s; }
+  .particle:nth-child(2) { left: 75%; top: 20%; animation-delay: 2s; }
+  .particle:nth-child(3) { left: 45%; top: 70%; animation-delay: 4s; }
+  .particle:nth-child(4) { left: 85%; top: 55%; animation-delay: 1s; }
+  .particle:nth-child(5) { left: 25%; top: 80%; animation-delay: 3s; }
+  .particle:nth-child(6) { left: 60%; top: 40%; animation-delay: 5s; }
+
+  /* === NAV === */
+  .nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 60px;
+    background: rgba(14,14,18,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 8px;
+    color: var(--white-hot);
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .nav-logo .x-highlight {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 20px rgba(160,232,240,0.4);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--chrome-3);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    position: relative;
+    cursor: pointer;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--accent-cyan);
+    transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--white-hot); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-links a.active { color: var(--accent-cyan); }
+  .nav-links a.active::after { width: 100%; }
+
+  /* Mobile menu */
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--glass-border);
+    color: var(--chrome-1);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  /* === PAGE SYSTEM === */
+  .page {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding-top: 60px;
+    animation: pageFadeIn 0.5s ease;
+  }
+  .page.active { display: block; }
+
+  /* === SHARED === */
+  .chrome-divider {
+    height: 1px;
+    margin: 0 60px;
+    background: linear-gradient(90deg, transparent 0%, var(--chrome-3) 30%, var(--accent-cyan) 50%, var(--chrome-3) 70%, transparent 100%);
+    opacity: 0.3;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: clamp(24px, 4vw, 40px);
+    color: var(--silver-shine);
+    letter-spacing: 2px;
+  }
+
+  /* ============================================
+     PAGE 1: HOME
+     ============================================ */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 40px 60px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(56px, 12vw, 140px);
+    line-height: 0.95;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.5s forwards;
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8e0 30%, #a8a8b4 70%, #888890 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 60px rgba(200,216,255,0.12));
+  }
+  .hero-title .xx {
+    background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(160,232,240,0.3));
+  }
+
+  .hero-subtitle {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: clamp(12px, 2vw, 18px);
+    letter-spacing: 14px;
+    color: var(--chrome-3);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.7s forwards;
+  }
+
+  .hero-tagline {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--chrome-2);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.9s forwards;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 36px;
+    border: 1px solid var(--chrome-3);
+    background: rgba(255,255,255,0.04);
+    color: var(--white-hot);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.4s;
+    opacity: 0;
+    animation: fadeSlideUp 1s 1.1s forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .hero-cta:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 30px rgba(160,232,240,0.1), inset 0 0 30px rgba(160,232,240,0.03);
+  }
+  .hero-cta:hover::before { opacity: 1; }
+  .hero-cta .arrow { font-size: 18px; transition: transform 0.3s; }
+  .hero-cta:hover .arrow { transform: translateX(4px); }
+
+  /* ============================================
+     PAGE 2: VAULT
+     ============================================ */
+  .vault-page { padding: 120px 40px 100px; }
+
+  .shows-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .show-card {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 36px 28px;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .show-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .show-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .show-card:hover {
+    border-color: rgba(160,232,240,0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(160,232,240,0.05);
+  }
+  .show-card:hover::before { opacity: 1; }
+
+  .show-era {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .show-name {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--white-hot);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .show-desc {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: var(--chrome-3);
+    line-height: 1.5;
+    font-weight: 400;
+  }
+  .show-index {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+  }
+
+  /* ============================================
+     PAGE 3: MUSIC
+     ============================================ */
+  .music-page { padding: 120px 40px 100px; }
+
+  .music-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .music-card {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 32px;
+    transition: all 0.4s;
+    overflow: hidden;
+  }
+  .music-card:hover {
+    border-color: rgba(160,232,240,0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  }
+
+  .music-card-top {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .music-artwork {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, rgba(160,232,240,0.1), rgba(126,184,224,0.05));
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .music-artwork-icon {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--accent-cyan);
+    opacity: 0.6;
+  }
+
+  .music-meta {
+    flex: 1;
+  }
+  .music-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--white-hot);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .music-artist {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+  }
+
+  .music-details {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: var(--chrome-3);
+    line-height: 1.5;
+  }
+
+  .music-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .music-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--chrome-3);
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .music-coming-soon {
+    text-align: center;
+    margin-top: 60px;
+    padding: 48px;
+    border: 1px dashed var(--glass-border);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .music-coming-soon p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--steel-mid);
+    text-transform: uppercase;
+  }
+  .music-coming-soon h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--chrome-2);
+    margin-top: 12px;
+    letter-spacing: 2px;
+  }
+
+  /* ============================================
+     PAGE 4: STAFF
+     ============================================ */
+  .staff-page { padding: 120px 40px 100px; }
+
+  .staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .staff-card {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 40px 28px;
+    text-align: center;
+    transition: all 0.4s;
+  }
+  .staff-card:hover {
+    border-color: rgba(160,232,240,0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+  }
+
+  .staff-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(160,232,240,0.08), rgba(126,184,224,0.04));
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .staff-initials {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    background: linear-gradient(180deg, var(--white-hot), var(--chrome-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .staff-name {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white-hot);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .staff-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .staff-bio {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: var(--chrome-3);
+    line-height: 1.5;
+  }
+
+  /* ============================================
+     PAGE 5: ABOUT
+     ============================================ */
+  .about-page { padding: 120px 40px 100px; }
+
+  .about-container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .about-block {
+    margin-bottom: 60px;
+  }
+  .about-block:last-child { margin-bottom: 0; }
+
+  .about-heading {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--white-hot);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .about-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    color: var(--chrome-2);
+    line-height: 1.8;
+    font-weight: 400;
+  }
+  .about-text strong {
+    color: var(--white-hot);
+    font-weight: 600;
+  }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .about-stat {
+    text-align: center;
+    padding: 28px 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+  }
+  .about-stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 32px;
+    background: linear-gradient(180deg, var(--white-hot), var(--chrome-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .about-stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+  }
+
+  /* === FOOTER === */
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    padding: 40px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-left {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--steel-mid);
+    text-transform: uppercase;
+  }
+  .footer-center {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: var(--steel-mid);
+    text-transform: uppercase;
+  }
+  .footer-dots {
+    display: flex;
+    gap: 24px;
+  }
+  .footer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    animation: blink 2s ease-in-out infinite;
+  }
+  .footer-dot:nth-child(2) { animation-delay: 0.3s; background: var(--chrome-3); }
+  .footer-dot:nth-child(3) { animation-delay: 0.6s; }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+  @keyframes particleFloat {
+    0%, 100% { opacity: 0; transform: translateY(0); }
+    30% { opacity: 0.5; }
+    50% { opacity: 0.3; transform: translateY(-40px); }
+    100% { opacity: 0; transform: translateY(-80px); }
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .nav-bar { padding: 0 20px; }
+    .nav-links { 
+      display: none;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: rgba(14,14,18,0.95);
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .nav-links.open { display: flex; }
+    .mobile-toggle { display: block; }
+    .hero { padding: 40px 24px 60px; }
+    .hero-title { letter-spacing: 4px; }
+    .vault-page, .music-page, .staff-page, .about-page { padding: 100px 20px 60px; }
+    .about-stats { grid-template-columns: 1fr; }
+    .site-footer { flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="grid-overlay"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+
+  <!-- NAV -->
+  <nav class="nav-bar">
+    <a class="nav-logo" onclick="showPage('home')">INDE<span class="x-highlight">XX</span></a>
+    <button class="mobile-toggle" onclick="toggleMobileMenu()">Menu</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a onclick="showPage('home')" class="active" data-page="home">Home</a></li>
+      <li><a onclick="showPage('vault')" data-page="vault">Vault</a></li>
+      <li><a onclick="showPage('music')" data-page="music">Music</a></li>
+      <li><a onclick="showPage('staff')" data-page="staff">Staff</a></li>
+      <li><a onclick="showPage('about')" data-page="about">About</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== HOME ===== -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-badge">/// Archive Entry Point ///</div>
+      <h1 class="hero-title">INDE<span class="xx">XX</span></h1>
+      <p class="hero-subtitle">The Nostalgia Archive</p>
+      <p class="hero-tagline">
+        A living archive of the shows that shaped us. Jetix static. Chrome interfaces. 
+        Saturday morning transmissions — indexed, preserved, never forgotten.
+      </p>
+      <a class="hero-cta" onclick="showPage('vault')">
+        Open the Vault <span class="arrow">→</span>
+      </a>
+    </section>
+  </div>
+
+  <!-- ===== VAULT ===== -->
+  <div class="page" id="page-vault">
+    <section class="vault-page">
+      <div class="section-header">
+        <p class="section-label">/// Catalogued Transmissions ///</p>
+        <h2 class="section-title">The Vault</h2>
+      </div>
+
+      <div class="shows-grid">
+        <div class="show-card">
+          <span class="show-index">01</span>
+          <p class="show-era">Jetix · 2004–2009</p>
+          <h3 class="show-name">Alpha Teens on Machines</h3>
+          <p class="show-desc">Five teens. Mecha suits. Non-stop action. The blueprint for adrenaline-fueled Saturday mornings.</p>
+        </div>
+        <div class="show-card">
+          <span class="show-index">02</span>
+          <p class="show-era">Jetix · 2002–2005</p>
+          <h3 class="show-name">Power Rangers</h3>
+          <p class="show-desc">Morphin time never ended. Megazords, team dynamics, and villains that hit different after dark.</p>
+        </div>
+        <div class="show-card">
+          <span class="show-index">03</span>
+          <p class="show-era">Jetix · 2005–2007</p>
+          <h3 class="show-name">Pucca</h3>
+          <p class="show-desc">Chaotic love in Sooga Village. Ninja chases, slapstick energy, and relentless devotion.</p>
+        </div>
+        <div class="show-card">
+          <span class="show-index">04</span>
+          <p class="show-era">Jetix · 2003–2006</p>
+          <h3 class="show-name">Yin Yang Yo!</h3>
+          <p class="show-desc">Twin rabbits mastering Woo Foo. Martial arts meets sibling chaos in the dopest dojo ever.</p>
+        </div>
+        <div class="show-card">
+          <span class="show-index">05</span>
+          <p class="show-era">Jetix · 2005–2008</p>
+          <h3 class="show-name">Get Ed</h3>
+          <p class="show-desc">Couriers in a cyberpunk city. Hoverboards, courier runs, and a crew that never quit.</p>
+        </div>
+        <div class="show-card">
+          <span class="show-index">06</span>
+          <p class="show-era">Jetix · 2004–2007</p>
+          <h3 class="show-name">Super Robot Monkey Team</h3>
+          <p class="show-desc">Hyper Force Go. A boy and his robot monkeys defending Shuggazoom City from the Skeleton King.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== MUSIC ===== -->
+  <div class="page" id="page-music">
+    <section class="music-page">
+      <div class="section-header">
+        <p class="section-label">/// Frequency Log ///</p>
+        <h2 class="section-title">Music</h2>
+      </div>
+
+      <div class="music-grid">
+        <div class="music-card">
+          <div class="music-card-top">
+            <div class="music-artwork"><span class="music-artwork-icon">IX</span></div>
+            <div class="music-meta">
+              <h3 class="music-title">Signal Lost</h3>
+              <p class="music-artist">Playlist · 12 Tracks</p>
+            </div>
+          </div>
+          <p class="music-details">Curated beats channeling Jetix intros, mecha energy, and late-night cartoon marathons.</p>
+          <div class="music-tags">
+            <span class="music-tag">Boom Bap</span>
+            <span class="music-tag">Lo-Fi</span>
+            <span class="music-tag">Nostalgia</span>
+          </div>
+        </div>
+
+        <div class="music-card">
+          <div class="music-card-top">
+            <div class="music-artwork"><span class="music-artwork-icon">IX</span></div>
+            <div class="music-meta">
+              <h3 class="music-title">Chrome Saturday</h3>
+              <p class="music-artist">Playlist · 9 Tracks</p>
+            </div>
+          </div>
+          <p class="music-details">The soundtrack to waking up early, pouring cereal, and watching heroes save the world before noon.</p>
+          <div class="music-tags">
+            <span class="music-tag">Rap</span>
+            <span class="music-tag">Instrumental</span>
+            <span class="music-tag">2000s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="music-coming-soon">
+        <p>/// Incoming Transmission ///</p>
+        <h3>More Frequencies Loading...</h3>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== STAFF ===== -->
+  <div class="page" id="page-staff">
+    <section class="staff-page">
+      <div class="section-header">
+        <p class="section-label">/// The Operators ///</p>
+        <h2 class="section-title">Staff</h2>
+      </div>
+
+      <div class="staff-grid">
+        <div class="staff-card">
+          <div class="staff-avatar">
+            <span class="staff-initials">—</span>
+          </div>
+          <h3 class="staff-name">TBD</h3>
+          <p class="staff-role">Founder</p>
+          <p class="staff-bio">The one who started the signal. More details incoming.</p>
+        </div>
+
+        <div class="staff-card">
+          <div class="staff-avatar">
+            <span class="staff-initials">—</span>
+          </div>
+          <h3 class="staff-name">TBD</h3>
+          <p class="staff-role">Creative Director</p>
+          <p class="staff-bio">Visual architect of the archive. Building the look and feel.</p>
+        </div>
+
+        <div class="staff-card">
+          <div class="staff-avatar">
+            <span class="staff-initials">—</span>
+          </div>
+          <h3 class="staff-name">TBD</h3>
+          <p class="staff-role">Music Curator</p>
+          <p class="staff-bio">Tuning the frequencies. Every playlist, every beat, every vibe.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== ABOUT ===== -->
+  <div class="page" id="page-about">
+    <section class="about-page">
+      <div class="section-header">
+        <p class="section-label">/// System Info ///</p>
+        <h2 class="section-title">About INDEXX</h2>
+      </div>
+
+      <div class="about-container">
+        <div class="about-block">
+          <h3 class="about-heading">The Mission</h3>
+          <p class="about-text">
+            <strong>INDEXX</strong> is a nostalgia archive — a living catalog of the shows, 
+            sounds, and signals from the Jetix era that shaped a generation. Part museum, 
+            part mixtape, part time machine. We don't just remember the culture — we 
+            <strong>index</strong> it, preserve it, and keep the signal alive.
+          </p>
+        </div>
+
+        <div class="about-block">
+          <h3 class="about-heading">Why It Exists</h3>
+          <p class="about-text">
+            Because Saturday mornings meant something. Because Alpha Teens on Machines, 
+            Power Rangers, and every show in between weren't just entertainment — they 
+            were a shared language. INDEXX exists so none of that gets lost in the static.
+          </p>
+        </div>
+
+        <div class="about-block">
+          <h3 class="about-heading">What We're Building</h3>
+          <p class="about-text">
+            A platform that bridges the gap between the era we grew up in and the culture 
+            we're creating now. Shows, music, community — all archived under one roof. 
+            The vault keeps growing. The signal stays live.
+          </p>
+
+          <div class="about-stats">
+            <div class="about-stat">
+              <div class="about-stat-number">6+</div>
+              <div class="about-stat-label">Shows Archived</div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-number">2</div>
+              <div class="about-stat-label">Playlists Live</div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-number">∞</div>
+              <div class="about-stat-label">Memories Indexed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER (always visible) -->
+  <footer class="site-footer">
+    <div class="footer-left">Signal Active · 2026</div>
+    <div class="footer-center">INDEXX</div>
+    <div class="footer-dots">
+      <div class="footer-dot"></div>
+      <div class="footer-dot"></div>
+      <div class="footer-dot"></div>
+    </div>
+  </footer>
+
+  <script>
+    function showPage(pageName) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      // Show target
+      document.getElementById('page-' + pageName).classList.add('active');
+      // Update nav
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      const activeLink = document.querySelector('.nav-links a[data-page="' + pageName + '"]');
+      if (activeLink) activeLink.classList.add('active');
+      // Scroll to top
+      window.scrollTo(0, 0);
+      // Close mobile menu
+      document.getElementById('navLinks').classList.remove('open');
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+  </script>
+
+</body>
+</html>
